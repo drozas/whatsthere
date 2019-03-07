@@ -1,4 +1,4 @@
-package es.simonapuucm.whatsthere;
+package es.whatsthere;
 
 import org.junit.Test;
 
