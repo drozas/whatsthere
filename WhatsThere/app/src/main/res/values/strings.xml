@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">What\'s there</string>
     <string name="action_settings">Settings</string>
+    <string name="modo_imagen">Imagen</string>
+    <string name="modo_video">Vídeo</string>
+    <string name="ajustes">Ajustes</string>
 </resources>
