@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.imageButton:
-                setContentView(R.layout.activity_image);
+                //setContentView(R.layout.activity_image);
+                launchImageActivity(v);
                 break;
 
             case R.id.videoButton:
@@ -45,5 +46,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 break;
         }
+    }
+
+    public void launchImageActivity(View v){
+        Intent intent = new Intent(this, ImageActivity.class);
+        startActivity(intent);
     }
 }

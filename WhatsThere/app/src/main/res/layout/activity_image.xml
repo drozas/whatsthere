@@ -15,13 +15,13 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="onClick"
-        android:text="@string/select_from_gallery"
+        android:text="@string/open_camera"
         android:textSize="36sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/galleryButton"
-        tools:text="@string/select_from_gallery" />
+        tools:text="@string/open_camera" />
 
     <Button
         android:id="@+id/galleryButton"
@@ -32,27 +32,12 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="onClick"
-        android:text="@string/open_camera"
+        android:text="@string/select_from_gallery"
         android:textSize="36sp"
         app:layout_constraintBottom_toTopOf="@+id/cameraButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/backButton"
-        tools:text="@string/open_camera" />
-
-    <Button
-        android:id="@+id/backButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/back"
-        android:textSize="36sp"
-        app:layout_constraintBottom_toTopOf="@+id/galleryButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="@string/back" />
+        tools:text="@string/select_from_gallery" />
+
 </android.support.constraint.ConstraintLayout>

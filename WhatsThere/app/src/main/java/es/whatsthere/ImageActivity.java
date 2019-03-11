@@ -19,12 +19,11 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_image);
 
         cameraButton = findViewById(R.id.cameraButton);
-        galleryButton = findViewById(R.id.cameraButton);
-        backButton = findViewById(R.id.backButton);
+        galleryButton = findViewById(R.id.galleryButton);
 
         cameraButton.setOnClickListener(this);
         galleryButton.setOnClickListener(this);
-        backButton.setOnClickListener(this);
+
     }
 
     @Override
@@ -41,16 +40,11 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.galleryButton:
 
-                Intent selectFromGalleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+/**                Intent selectFromGalleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 if (selectFromGalleryIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(selectFromGalleryIntent, REQUEST_IMAGE_GALLERY);
                 }
-
-                break;
-
-            case R.id.backButton:
-                setContentView(R.layout.activity_main);
-
+**/
                 break;
         }
     }
