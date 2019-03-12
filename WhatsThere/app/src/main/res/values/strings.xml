@@ -79,4 +79,6 @@
     <string name="zpref_title_vibrate">Vibrate</string>
     <string name="select_from_gallery">Seleccionar desde galería</string>
     <string name="open_camera">Acceder a cámara</string>
+    <string name="getDescription">Obtener descripción</string>
+    <string name="image_placeholder">Imagen seleccionada</string>
 </resources>
