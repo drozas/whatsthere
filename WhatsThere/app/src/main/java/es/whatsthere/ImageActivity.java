@@ -11,6 +11,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.services.rekognition.AmazonRekognitionClient;
+
 public class ImageActivity extends AppCompatActivity implements View.OnClickListener {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -18,6 +22,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     Button cameraButton, galleryButton, descriptionButton;
     private ImageView selectedImage;
     private Bitmap currentImage;
+    private AmazonRekognitionClient clientAmazon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +37,9 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         cameraButton.setOnClickListener(this);
         galleryButton.setOnClickListener(this);
         descriptionButton.setOnClickListener(this);
+
+        clientAmazon = new AmazonRekognitionClient();
+        clientAmazon.setRegion(Region.getRegion("eu-west-1"));
 
     }
 
@@ -59,7 +67,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.descriptionButton:
                 if (selectedImage != null) {
-                    // TODO
+
                 } else {
                     // TODO
                 }
