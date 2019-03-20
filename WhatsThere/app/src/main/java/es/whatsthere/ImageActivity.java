@@ -38,7 +38,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         galleryButton.setOnClickListener(this);
         descriptionButton.setOnClickListener(this);
 
-        clientAmazon = new AmazonRekognitionClient();
+        clientAmazon = new AmazonRekognitionClient(new BasicAWSCredentials("", ""));
         clientAmazon.setRegion(Region.getRegion("eu-west-1"));
 
     }
@@ -68,6 +68,11 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
             case R.id.descriptionButton:
                 if (selectedImage != null) {
 
+                    DetectLabelsRequest request = new DetectLabelsRequest(image);
+
+                    DetectLabelsResult result = clientAmazon.detectLabels(request);
+
+                    List <Label> = result.getLabels();
                 } else {
                     // TODO
                 }
@@ -110,6 +115,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
                     break;
             }
+
 
         }
     }
