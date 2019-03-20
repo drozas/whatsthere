@@ -6,7 +6,7 @@
         android:name="android.hardware.camera"
         android:required="true" />
     <uses-feature
-        android:name="android" /> // TODO galeria
+        android:name="android" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -39,6 +39,18 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="es.whatsthere.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+
+        </provider>
+
     </application>
 
 </manifest>
