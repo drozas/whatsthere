@@ -112,6 +112,22 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
             }
 
         }
+        System.out.println("CURRENT PHOTO PATH: "+currentPhotoPath);
+        if(currentPhotoPath != null){
+            File imgFile = new  File(currentPhotoPath);
+
+            if(imgFile.exists()){
+                try{
+                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    ImageView myImage = (ImageView) findViewById(R.id.selectedImage);
+                    myImage.setBackground(null);
+                    myImage.setImageBitmap(Bitmap.createScaledBitmap(myBitmap,200,200,false));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void dispatchTakePictureIntent() {
