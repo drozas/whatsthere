@@ -14,10 +14,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.services.rekognition.AmazonRekognitionClient;
+import com.amazonaws.services.rekognition.model.DetectLabelsRequest;
+import com.amazonaws.services.rekognition.model.DetectLabelsResult;
+import com.amazonaws.services.rekognition.model.Image;
+import com.amazonaws.services.rekognition.model.Label;
 
 public class ImageActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -26,6 +29,10 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     Button cameraButton, galleryButton, descriptionButton;
     private ImageView selectedImage;
     private String currentPhotoPath;
+    private Bitmap currentImage;
+
+    private AmazonRekognitionClient clientAmazon;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +47,9 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         cameraButton.setOnClickListener(this);
         galleryButton.setOnClickListener(this);
         descriptionButton.setOnClickListener(this);
+
+        clientAmazon = new AmazonRekognitionClient(new BasicAWSCredentials("", ""));
+        clientAmazon.setRegion(Region.getRegion("eu-west-1"));
 
     }
 
@@ -64,7 +74,24 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.descriptionButton:
                 if (selectedImage != null) {
-                    // TODO
+
+                    int size = currentImage.getRowBytes() * bitmap.getHeight();
+
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+                    currentImage.copyPixelsToBuffer(byteBuffer);
+
+                    Image source = new Image().withBytes(byteBuffer);
+
+                    DetectLabelsRequest request = new DetectLabelsRequest(source);
+                    //Se pueden añadir parametros a la request como por ejemplo el minimo de confianza y el maximo de etiquetas
+                    request.withMinConfidence(90.0).withMaxLabels(20);
+
+
+                    DetectLabelsResult result = clientAmazon.detectLabels(request);
+
+                    List<Label> labels = result.getLabels();
+
+
                 } else {
                     // TODO
                 }
@@ -110,6 +137,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
                     break;
             }
+
 
         }
     }
