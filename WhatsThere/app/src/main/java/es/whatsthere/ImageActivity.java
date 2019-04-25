@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import android.speech.tts.TextToSpeech;
 
 public class ImageActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -26,6 +28,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     Button cameraButton, galleryButton, descriptionButton;
     private ImageView selectedImage;
     private String currentPhotoPath;
+    TextToSpeech tts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,17 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         cameraButton.setOnClickListener(this);
         galleryButton.setOnClickListener(this);
         descriptionButton.setOnClickListener(this);
+
+
+        tts=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+
+            @Override
+            public void onInit(int status) {
+                if(status == TextToSpeech.SUCCESS){
+                    tts.setLanguage(new Locale("es", "ES"));
+                }
+            }
+        });
 
     }
 
@@ -64,7 +78,9 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.descriptionButton:
                 if (selectedImage != null) {
-                    // TODO
+                    String texto = "Texto prueba";
+                    ConvertTextToSpeech(texto);
+
                 } else {
                     // TODO
                 }
@@ -186,6 +202,16 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
         Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
         selectedImage.setImageBitmap(bitmap);
+    }
+
+    private void ConvertTextToSpeech(CharSequence text) {
+        // TODO Auto-generated method stub
+        if(text==null||"".equals(text))
+        {
+            text = "Content not available";
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }else
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
 }
