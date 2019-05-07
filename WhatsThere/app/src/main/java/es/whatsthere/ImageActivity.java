@@ -21,6 +21,20 @@ import java.util.Date;
 import java.util.Locale;
 import android.speech.tts.TextToSpeech;
 
+import java.io.FileInputStream;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.util.EntityUtils;
+
 public class ImageActivity extends AppCompatActivity implements View.OnClickListener {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -78,6 +92,8 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.descriptionButton:
                 if (selectedImage != null) {
+                    // TODO: Llamada REST a API
+                    restCall();
                     String texto = "Texto prueba";
                     ConvertTextToSpeech(texto);
 
@@ -214,4 +230,42 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
+
+    public void restCall(){
+        try {
+            DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
+
+            // server back-end URL
+            HttpPost httppost = new HttpPost("http://localhost:8080/FileUploaderRESTService-1/rest/upload");
+            //MultipartEntity entity = new MultipartEntity();
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+            /* example for setting a HttpMultipartMode */
+            builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+
+            /* example for adding an image part */
+            FileBody fileBody = new FileBody(new File(currentPhotoPath));
+            builder.addPart("my_file", fileBody);
+            HttpEntity entity = builder.build();
+
+            // set the file input stream and file name as arguments
+            //entity.addPart("file", new InputStreamBody(fis, inFile.getName()));
+            httppost.setEntity(entity);
+            // execute the request
+            HttpResponse response = httpclient.execute(httppost);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity, "UTF-8");
+
+            System.out.println("[" + statusCode + "] " + responseString);
+
+        } catch (ClientProtocolException e) {
+            System.err.println("Unable to make connection");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("Unable to read file");
+            e.printStackTrace();
+        }
+    }
 }
