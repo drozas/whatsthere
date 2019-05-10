@@ -13,14 +13,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
-import com.amazonaws.auth.AWSCredentials;
+import org.json.*;
+import java.util.*;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.rekognition.AmazonRekognitionClient;
 import com.amazonaws.services.rekognition.model.DetectLabelsRequest;
 import com.amazonaws.services.rekognition.model.DetectLabelsResult;
-import com.amazonaws.services.rekognition.model.Image;
-import com.amazonaws.services.rekognition.model.Label;
+import java.util.Locale;
+import android.speech.tts.TextToSpeech;
+import android.os.AsyncTask;
+import java.io.*;
+import java.net.*;
+import java.net.HttpURLConnection;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import android.util.JsonReader;
+
+
 
 public class ImageActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -29,8 +38,8 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     Button cameraButton, galleryButton, descriptionButton;
     private ImageView selectedImage;
     private String currentPhotoPath;
-    private Bitmap currentImage;
-
+    TextToSpeech tts;
+    Bitmap bitmap;
     private AmazonRekognitionClient clientAmazon;
 
 
@@ -48,8 +57,16 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         galleryButton.setOnClickListener(this);
         descriptionButton.setOnClickListener(this);
 
-        clientAmazon = new AmazonRekognitionClient(new BasicAWSCredentials("", ""));
-        clientAmazon.setRegion(Region.getRegion("eu-west-1"));
+
+        tts=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+
+            @Override
+            public void onInit(int status) {
+                if(status == TextToSpeech.SUCCESS){
+                    tts.setLanguage(new Locale("es", "ES"));
+                }
+            }
+        });
 
     }
 
@@ -74,13 +91,13 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.descriptionButton:
                 if (selectedImage != null) {
+                    // TODO: Llamada REST a API
+                    restCall();
+                    String response = "{\"status\":\"ok\", \"result\":[{\"class\":\"taza\",\"p\":\"90\"},{\"class\":\"colacao\",\"p\":\"90\"}"+ ",{\"class\":\"taza\",\"p\":\"90\"}]}";
 
-                    int size = currentImage.getRowBytes() * bitmap.getHeight();
+                    String texto = parseResponse(response).toString();
+                    ConvertTextToSpeech(texto);
 
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(size);
-                    currentImage.copyPixelsToBuffer(byteBuffer);
-
-                    Image source = new Image().withBytes(byteBuffer);
 
                     DetectLabelsRequest request = new DetectLabelsRequest(source);
                     //Se pueden añadir parametros a la request como por ejemplo el minimo de confianza y el maximo de etiquetas
@@ -105,7 +122,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         super.onActivityResult(requestCode, resultCode, data);
         Uri imageUri;
 
-        if (requestCode == RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_IMAGE_CAPTURE:
                     imageUri = data.getData();
@@ -139,6 +156,22 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
             }
 
 
+        }
+        System.out.println("CURRENT PHOTO PATH: "+currentPhotoPath);
+        if(currentPhotoPath != null){
+            File imgFile = new  File(currentPhotoPath);
+
+            if(imgFile.exists()){
+                try{
+                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    ImageView myImage = (ImageView) findViewById(R.id.selectedImage);
+                    myImage.setBackground(null);
+                    myImage.setImageBitmap(Bitmap.createScaledBitmap(myBitmap,200,200,false));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -196,8 +229,123 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         bmOptions.inSampleSize = scaleFactor;
         bmOptions.inPurgeable = true;
 
-        Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+        bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
         selectedImage.setImageBitmap(bitmap);
     }
 
+    private void ConvertTextToSpeech(CharSequence text) {
+        // TODO Auto-generated method stub
+        //String response = "{\"status\":\"ok\", \"result\":[{\"class\":\"taza\",\"p\":\"70\"},{\"class\":\"colacao\",\"p\":\"90\"}"+ ",{\"class\":\"taza\",\"p\":\"90\"}]}";
+
+        if(text==null||"".equals(text))
+        {
+            text = "Content not available";
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }else
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+
+    public void restCall(){
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    // Create URL
+                    URL githubEndpoint = new URL("http://34.90.58.90:5500/recon");
+                    //URL githubEndpoint = new URL("http://192.168.43.60:5500");
+                    //URL githubEndpoint = new URL("https://services5.arcgis.com/UxADft6QPcvFyDU1/arcgis/rest/services/Red_Metro/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json");
+                    StringBuilder result = new StringBuilder();
+                    // Create connection
+                    HttpURLConnection myConnection = (HttpURLConnection) githubEndpoint.openConnection();
+                    myConnection.setRequestMethod("POST");
+                    //myConnection.setRequestProperty("content-type", "application/json");
+                    myConnection.setReadTimeout(60*1000);
+                    myConnection.setRequestProperty("Content-Type", "multipart/form-data;file=" + currentPhotoPath);
+
+                    myConnection.connect();
+
+                    OutputStream output = myConnection.getOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, output);
+                    output.close();
+                    //DataOutputStream request = new DataOutputStream(myConnection.getOutputStream());
+
+                    /*request.writeBytes(this.twoHyphens + this.boundary + this.crlf);
+                    request.writeBytes("Content-Disposition: form-data; name=\"" +
+                            this.attachmentName + "\";filename=\"" +
+                            this.attachmentFileName + "\"" + this.crlf);*/
+                    /*request.writeBytes(currentPhotoPath);
+                    byte[] pixels = new byte[bitmap.getWidth() * bitmap.getHeight()];
+                    for (int i = 0; i < bitmap.getWidth(); ++i) {
+                        for (int j = 0; j < bitmap.getHeight(); ++j) {
+                            //we're interested only in the MSB of the first byte,
+                            //since the other 3 bytes are identical for B&W images
+                            pixels[i + j] = (byte) ((bitmap.getPixel(i, j) & 0x80) >> 7);
+                        }
+                    }
+
+                    request.write(pixels);*/
+
+
+                    //request.flush();
+                    //request.close();
+                    if (myConnection.getResponseCode() == 200) {
+                        // Success
+                        InputStream in = new BufferedInputStream(myConnection.getInputStream());
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            result.append(line);
+                        }
+                        System.out.println(result.toString());
+
+                    }
+                    else {
+                        // Error handling code goes here
+                        System.out.println("ERROR");
+                    }
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
+
+    }
+
+    public StringBuilder parseResponse(String response){
+        StringBuilder texto = new StringBuilder();
+
+        try {
+            JSONObject json = new JSONObject(response);
+            JSONArray jsonArray = json.getJSONArray("result");
+
+
+            HashMap<String, Integer> data = new HashMap<String, Integer>();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonData = jsonArray.getJSONObject(i);
+                if (jsonData.getInt("p") >= 85) {
+                    String clave = jsonData.getString("class");
+                    if (data.containsKey(clave)) {
+                        data.put(clave, data.get(clave) + 1);
+                    } else {
+                        data.put(clave, 1);
+                    }
+                }
+            }
+
+
+        for(String objeto : data.keySet()){
+            texto.append("En la imagen hay " + data.get(objeto) + " " + objeto + ".\n");
+        }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return texto;
+
+    }
 }
