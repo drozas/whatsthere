@@ -1,4 +1,4 @@
-package es.whatsthere;
+package com.ignacio.cameraSender;
 
 import org.junit.Test;
 

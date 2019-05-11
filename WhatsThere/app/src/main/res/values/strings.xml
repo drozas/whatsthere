@@ -1,84 +1,10 @@
 <resources>
-    <string name="app_name">What\'s there</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">What\'s There</string>
+    <string name="title_activity_image">Imagen</string>
     <string name="modo_imagen">Imagen</string>
     <string name="modo_video">Vídeo</string>
-    <string name="ajustes">Ajustes</string>
-    <string name="title_activity_settings">Settings</string>
-
-    <!-- Strings related to Settings -->
-
-    <!-- Example General settings -->
-    <string name="zpref_header_general">General</string>
-
-    <string name="pref_high_contrast">Habilitar alto contraste</string>
-    <string name="zpref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
-
-    <string name="zpref_title_display_name">Display name</string>
-    <string name="zpref_default_display_name">John Smith</string>
-
-    <string name="zpref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
-
-    <!-- Example settings for Data & Sync -->
-    <string name="zpref_header_data_sync">Data &amp; sync</string>
-
-    <string name="zpref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
-
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="multi_select_list_preference_default_value" />
-
-    <string name="zpref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
-    <string name="zpref_header_notifications">Notifications</string>
-
-    <string name="zpref_title_new_message_notifications">New message notifications</string>
-
-    <string name="zpref_title_ringtone">Ringtone</string>
-    <string name="zpref_ringtone_silent">Silent</string>
-
-    <string name="zpref_title_vibrate">Vibrate</string>
-    <string name="select_from_gallery">Seleccionar desde galería</string>
-    <string name="open_camera">Acceder a cámara</string>
-    <string name="getDescription">Obtener descripción</string>
-    <string name="image_placeholder">Imagen seleccionada</string>
+    <string name="modo_descripcion">Descripción</string>
+    <string name="galeria">Seleccionar desde galería</string>
+    <string name="camara">Obtener desde cámara</string>
+    <string name="action_settings">Ajustes</string>
 </resources>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".ImageActivity"
+    tools:showIn="@layout/activity_image">
+
+<!--    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+  android:orientation="vertical"
+  tools:context=".MainActivity">-->
+
+
+  <de.hdodenhof.circleimageview.CircleImageView
+      android:id="@+id/userProfileImage"
+      android:layout_width="300dp"
+      android:layout_height="300dp"
+      android:layout_gravity="center"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="16dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="16dp"
+      android:src="@drawable/camera"
+      app:civ_border_color="#FF000000"
+      app:civ_border_width="2dp"
+      app:layout_constraintBottom_toTopOf="@+id/descriptionButton"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/descriptionButton"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="8dp"
+      android:text="@string/modo_descripcion"
+      android:textSize="36sp"
+      app:layout_constraintBottom_toTopOf="@+id/imageButton"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/userProfileImage"
+      tools:text="@string/modo_descripcion" />
+
+  <Button
+      android:id="@+id/imageButton"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="8dp"
+      android:text="@string/camara"
+      android:textSize="36sp"
+      android:onClick="takeUserImage"
+      app:layout_constraintBottom_toTopOf="@+id/videoButton"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/descriptionButton"
+      app:layout_constraintVertical_bias="0.88"
+      tools:text="@string/camara" />
+
+  <Button
+      android:id="@+id/videoButton"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="8dp"
+      android:text="@string/galeria"
+      android:textSize="36sp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/imageButton"
+      tools:text="@string/galeria" />
+    <!--</LinearLayout>-->
+</android.support.constraint.ConstraintLayout>
