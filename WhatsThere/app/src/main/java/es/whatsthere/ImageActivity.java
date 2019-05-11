@@ -90,7 +90,7 @@ public class ImageActivity extends AppCompatActivity {
 
                     sendPost(profilePic);
                     Log.d(TAG, "Enviando imagen");
-                    ConvertTextToSpeech("Picture description requested.");
+                    //ConvertTextToSpeech("Picture description requested.");
                 }else{
                     ConvertTextToSpeech("There is no picture selected.");
                 }
@@ -99,9 +99,6 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public void sendPost(MultipartBody.Part imagePart) {
-        pDialog = new ProgressDialog(ImageActivity.this);
-        pDialog.setMessage("Intentando enviar imagen");
-        pDialog.show();
         mAPIService.uploadData(imagePart).enqueue(new Callback<MessageResponse>() {
             @Override
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
@@ -109,8 +106,6 @@ public class ImageActivity extends AppCompatActivity {
                 if(response.isSuccessful()) {
                     Log.d(TAG,"Response successful!");
                     Log.d(TAG, "post submitted to API." + response.body().toString());
-                    pDialog.dismiss();
-
 
                     Gson gson = new Gson();
                     final String successResponse = gson.toJson(response.body());
@@ -125,7 +120,6 @@ public class ImageActivity extends AppCompatActivity {
                     ConvertTextToSpeech(text);
                     Toast toast = Toast.makeText(ImageActivity.this, text,Toast.LENGTH_LONG);
                     toast.show();
-                    pDialog.dismiss();
                 }
             }
 
