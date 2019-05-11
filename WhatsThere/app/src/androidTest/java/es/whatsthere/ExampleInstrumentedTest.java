@@ -1,4 +1,4 @@
-package es.whatsthere;
+package com.ignacio.cameraSender;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("es.whatsthere", appContext.getPackageName());
+        assertEquals("com.ignacio.cameraSender", appContext.getPackageName());
     }
 }

@@ -1,227 +1,179 @@
 package es.whatsthere;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.Nullable;
-import android.support.v4.content.FileProvider;
+import android.speech.tts.TextToSpeech;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import org.json.*;
+import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
+import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
-import android.speech.tts.TextToSpeech;
-import android.os.AsyncTask;
-import java.io.*;
-import java.net.*;
-import java.net.HttpURLConnection;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
+import es.whatsthere.data.model.MessageResponse;
+import es.whatsthere.data.remote.APIService;
+import es.whatsthere.data.remote.APIUtils;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+public class ImageActivity extends AppCompatActivity {
 
-public class ImageActivity extends AppCompatActivity implements View.OnClickListener {
-
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final int REQUEST_IMAGE_GALLERY = 2;
-    Button cameraButton, galleryButton, descriptionButton;
-    private ImageView selectedImage;
-    private String currentPhotoPath;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    Bitmap myBitmap;
+    private APIService mAPIService;
+    ProgressDialog pDialog;
     TextToSpeech tts;
-    Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        cameraButton = findViewById(R.id.cameraButton);
-        galleryButton = findViewById(R.id.galleryButton);
-        descriptionButton = findViewById(R.id.descriptionButton);
-        selectedImage = findViewById(R.id.selectedImage);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        cameraButton.setOnClickListener(this);
-        galleryButton.setOnClickListener(this);
-        descriptionButton.setOnClickListener(this);
+        Button submitBtn = findViewById(R.id.descriptionButton);
 
+        mAPIService = APIUtils.getAPIService();
 
         tts=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-
             @Override
             public void onInit(int status) {
                 if(status == TextToSpeech.SUCCESS){
-                    tts.setLanguage(new Locale("es", "ES"));
+                    tts.setLanguage(new Locale("en", "GB"));
                 }
             }
         });
 
+
+        //Button Press
+        submitBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(myBitmap != null){
+                    MultipartBody.Part profilePic = null;
+                    File file = CreateFileFromBitmap(myBitmap);
+
+                    RequestBody requestFile = RequestBody.create(
+                            MediaType.parse("multipart/form-data"), file);
+
+                    profilePic = MultipartBody.Part.createFormData("file", "file.jpg", requestFile);
+
+                    sendPost(profilePic);
+                    Log.d(TAG, "Enviando imagen");
+                    ConvertTextToSpeech("Picture description requested.");
+                }else{
+                    ConvertTextToSpeech("There is no picture selected.");
+                }
+            }
+        });
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.cameraButton:
+    public void sendPost(MultipartBody.Part imagePart) {
+        pDialog = new ProgressDialog(ImageActivity.this);
+        pDialog.setMessage("Intentando enviar imagen");
+        pDialog.show();
+        mAPIService.uploadData(imagePart).enqueue(new Callback<MessageResponse>() {
+            @Override
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                Log.e(TAG,String.valueOf(response.code()));
+                if(response.isSuccessful()) {
+                    Log.d(TAG,"Response successful!");
+                    Log.d(TAG, "post submitted to API." + response.body().toString());
+                    pDialog.dismiss();
 
-                dispatchTakePictureIntent();
 
-                break;
+                    Gson gson = new Gson();
+                    final String successResponse = gson.toJson(response.body());
+                    final StringBuilder stringBuilder = parseResponse(successResponse);
+                    Log.d(TAG, "Valor de String: " + stringBuilder);
 
-            case R.id.galleryButton:
+                    ConvertTextToSpeech("The picture contains " + stringBuilder.toString());
 
-                Intent selectFromGalleryIntent = new Intent(Intent.ACTION_PICK);
-                selectFromGalleryIntent.setType("image/*");
-                if (selectFromGalleryIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(selectFromGalleryIntent, REQUEST_IMAGE_GALLERY);
                 }
-
-                break;
-
-            case R.id.descriptionButton:
-                if (selectedImage != null) {
-                    // TODO: Llamada REST a API
-                    restCall();
-                    String response = "{\"status\":\"ok\", \"result\":[{\"class\":\"taza\",\"p\":\"90\"},{\"class\":\"colacao\",\"p\":\"90\"}"+ ",{\"class\":\"taza\",\"p\":\"90\"}]}";
-
-                    String texto = parseResponse(response).toString();
-                    ConvertTextToSpeech(texto);
-
-                } else {
-                    // TODO
+                else{
+                    String text = "Error: " + response.code() +  " \nImage sending error";
+                    ConvertTextToSpeech(text);
+                    Toast toast = Toast.makeText(ImageActivity.this, text,Toast.LENGTH_LONG);
+                    toast.show();
+                    pDialog.dismiss();
                 }
+            }
 
-                break;
-        }
+            @Override
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                Toast toast = Toast.makeText(ImageActivity.this, "Unable to send image " + t.getCause(),Toast.LENGTH_LONG);
+                toast.show();
+                Log.e(TAG, t.getMessage().toLowerCase());
+                Log.e(TAG,call.request().body().toString());
+                Log.e(TAG,call.request().url().toString());
+            }
+        });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Uri imageUri;
+    public StringBuilder parseResponse(String response){
+        Log.d(TAG, "Texto: " + response+"\n\n\n\n");
+        StringBuilder texto = new StringBuilder();
+        try {
+            JSONObject json = new JSONObject(response);
+            JSONArray jsonArray = json.getJSONArray("result");
+            HashMap<String, Integer> data = new HashMap<>();
 
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_IMAGE_CAPTURE:
-                    imageUri = data.getData();
-                    if(imageUri != null){
-                        try{
-//                            Bundle extras = data.getExtras();
-//                            Bitmap imageBitmap = (Bitmap) extras.get("data");
-//                            selectedImage.setImageBitmap(imageBitmap);
-
-                            setPic();
-                        }
-                        catch (Exception e){
-                            e.printStackTrace(); // TODO manejar el posible error
+            if(jsonArray.length()> 0){
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonData = jsonArray.getJSONObject(i);
+                    if (jsonData.getInt("p") >= 10) {
+                        String clave = jsonData.getString("class");
+                        if (data.containsKey(clave)) {
+                            data.put(clave, data.get(clave) + 1);
+                        } else {
+                            data.put(clave, 1);
                         }
                     }
-
-                    break;
-                case REQUEST_IMAGE_GALLERY:
-                    imageUri = data.getData();
-                    if(imageUri != null){
-                        try{
-                          Bitmap  currentImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                            selectedImage.setImageBitmap(currentImage);
-                        }
-                        catch (Exception e){
-                            e.printStackTrace(); // TODO manejar el posible error
-                        }
-                    }
-
-                    break;
-            }
-
-
-        }
-        System.out.println("CURRENT PHOTO PATH: "+currentPhotoPath);
-        if(currentPhotoPath != null){
-            File imgFile = new  File(currentPhotoPath);
-
-            if(imgFile.exists()){
-                try{
-                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    ImageView myImage = (ImageView) findViewById(R.id.selectedImage);
-                    myImage.setBackground(null);
-                    myImage.setImageBitmap(Bitmap.createScaledBitmap(myBitmap,200,200,false));
                 }
-                catch (Exception e){
-                    e.printStackTrace();
+
+                for(String objeto : data.keySet()){
+                    texto.append(data.get(objeto) + " " + objeto + ".\n");
                 }
+            }else{
+                texto.append("The system could not recognize any object in this picture.");
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
-    }
-
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,"es.whatsthere.fileprovider", photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-            }
-        }
-    }
-
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
-    private void setPic() {
-        // Get the dimensions of the View
-        int targetW = selectedImage.getWidth();
-        int targetH = selectedImage.getHeight();
-
-        // Get the dimensions of the bitmap
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
-        int photoW = bmOptions.outWidth;
-        int photoH = bmOptions.outHeight;
-
-        // Determine how much to scale down the image
-        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
-
-        // Decode the image file into a Bitmap sized to fill the View
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-        bmOptions.inPurgeable = true;
-
-        bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
-        selectedImage.setImageBitmap(bitmap);
+        return texto;
     }
 
     private void ConvertTextToSpeech(CharSequence text) {
-        // TODO Auto-generated method stub
-        //String response = "{\"status\":\"ok\", \"result\":[{\"class\":\"taza\",\"p\":\"70\"},{\"class\":\"colacao\",\"p\":\"90\"}"+ ",{\"class\":\"taza\",\"p\":\"90\"}]}";
-
         if(text==null||"".equals(text))
         {
             text = "Content not available";
@@ -231,104 +183,63 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-    public void restCall(){
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    // Create URL
-                    URL githubEndpoint = new URL("http://34.90.58.90:5500/recon");
-                    //URL githubEndpoint = new URL("http://192.168.43.60:5500");
-                    //URL githubEndpoint = new URL("https://services5.arcgis.com/UxADft6QPcvFyDU1/arcgis/rest/services/Red_Metro/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json");
-                    StringBuilder result = new StringBuilder();
-                    // Create connection
-                    HttpURLConnection myConnection = (HttpURLConnection) githubEndpoint.openConnection();
-                    myConnection.setRequestMethod("POST");
-                    //myConnection.setRequestProperty("content-type", "application/json");
-                    myConnection.setReadTimeout(60*1000);
-                    myConnection.setRequestProperty("Content-Type", "multipart/form-data;file=" + currentPhotoPath);
-
-                    myConnection.connect();
-
-                    OutputStream output = myConnection.getOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, output);
-                    output.close();
-                    //DataOutputStream request = new DataOutputStream(myConnection.getOutputStream());
-
-                    /*request.writeBytes(this.twoHyphens + this.boundary + this.crlf);
-                    request.writeBytes("Content-Disposition: form-data; name=\"" +
-                            this.attachmentName + "\";filename=\"" +
-                            this.attachmentFileName + "\"" + this.crlf);*/
-                    /*request.writeBytes(currentPhotoPath);
-                    byte[] pixels = new byte[bitmap.getWidth() * bitmap.getHeight()];
-                    for (int i = 0; i < bitmap.getWidth(); ++i) {
-                        for (int j = 0; j < bitmap.getHeight(); ++j) {
-                            //we're interested only in the MSB of the first byte,
-                            //since the other 3 bytes are identical for B&W images
-                            pixels[i + j] = (byte) ((bitmap.getPixel(i, j) & 0x80) >> 7);
-                        }
-                    }
-
-                    request.write(pixels);*/
-
-
-                    //request.flush();
-                    //request.close();
-                    if (myConnection.getResponseCode() == 200) {
-                        // Success
-                        InputStream in = new BufferedInputStream(myConnection.getInputStream());
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            result.append(line);
-                        }
-                        System.out.println(result.toString());
-
-                    }
-                    else {
-                        // Error handling code goes here
-                        System.out.println("ERROR");
-                    }
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-
-    }
-
-    public StringBuilder parseResponse(String response){
-        StringBuilder texto = new StringBuilder();
-
+    public File CreateFileFromBitmap(Bitmap bitmap){
+        //create a file to write bitmap data
+        File f = new File(this.getCacheDir(), "childimage");
         try {
-            JSONObject json = new JSONObject(response);
-            JSONArray jsonArray = json.getJSONArray("result");
-
-
-            HashMap<String, Integer> data = new HashMap<String, Integer>();
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonData = jsonArray.getJSONObject(i);
-                if (jsonData.getInt("p") >= 85) {
-                    String clave = jsonData.getString("class");
-                    if (data.containsKey(clave)) {
-                        data.put(clave, data.get(clave) + 1);
-                    } else {
-                        data.put(clave, 1);
-                    }
-                }
-            }
-
-
-        for(String objeto : data.keySet()){
-            texto.append("En la imagen hay " + data.get(objeto) + " " + objeto + ".\n");
-        }
-        }catch (Exception e){
+            f.createNewFile();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return texto;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+        byte[] bitmapdata = bos.toByteArray();
 
+//write the bytes in file
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(f);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            fos.write(bitmapdata);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            fos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return f;
+    }
+
+    public void takeUserImage(View view) {
+        ConvertTextToSpeech("Activated camera.");
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, 100);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100) {
+
+            if (resultCode == RESULT_OK) {
+
+                myBitmap = data.getExtras().getParcelable("data");
+                ImageView image = findViewById(R.id.userProfileImage);
+                image.setImageBitmap(myBitmap);
+
+                ConvertTextToSpeech("Picture taken successfully.");
+            }
+        }
     }
 }

@@ -35,27 +35,10 @@
         android:layout_marginBottom="8dp"
         android:text="@string/modo_video"
         android:textSize="36sp"
-        app:layout_constraintBottom_toTopOf="@+id/settingsButton"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageButton"
         tools:text="@string/modo_video" />
-
-    <Button
-        android:id="@+id/settingsButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/ajustes"
-        android:textSize="36sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/videoButton"
-        app:layout_constraintVertical_bias="0.74"
-        tools:text="@string/ajustes" />
 
 </android.support.constraint.ConstraintLayout>
