@@ -14,11 +14,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import org.json.*;
+
+import java.text.SimpleDateFormat;
 import java.util.*;
-import com.amazonaws.regions.Region;
-import com.amazonaws.services.rekognition.AmazonRekognitionClient;
-import com.amazonaws.services.rekognition.model.DetectLabelsRequest;
-import com.amazonaws.services.rekognition.model.DetectLabelsResult;
+
 import java.util.Locale;
 import android.speech.tts.TextToSpeech;
 import android.os.AsyncTask;
@@ -27,7 +26,6 @@ import java.net.*;
 import java.net.HttpURLConnection;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import android.util.JsonReader;
 
 
 
@@ -40,8 +38,6 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     private String currentPhotoPath;
     TextToSpeech tts;
     Bitmap bitmap;
-    private AmazonRekognitionClient clientAmazon;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,17 +93,6 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
                     String texto = parseResponse(response).toString();
                     ConvertTextToSpeech(texto);
-
-
-                    DetectLabelsRequest request = new DetectLabelsRequest(source);
-                    //Se pueden añadir parametros a la request como por ejemplo el minimo de confianza y el maximo de etiquetas
-                    request.withMinConfidence(90.0).withMaxLabels(20);
-
-
-                    DetectLabelsResult result = clientAmazon.detectLabels(request);
-
-                    List<Label> labels = result.getLabels();
-
 
                 } else {
                     // TODO
@@ -309,8 +294,6 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-
-
             }
         });
 
