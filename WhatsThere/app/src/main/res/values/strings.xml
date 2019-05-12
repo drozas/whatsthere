@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">What\'s There</string>
     <string name="title_activity_image">Image</string>
-    <string name="modo_imagen">Image mode</string>
-    <string name="modo_video">Video mode</string>
-    <string name="galeria">Pick from gallery</string>
-    <string name="camara">Get image from camera</string>
+    <string name="modo_imagen">Image Mode</string>
+    <string name="modo_video">Video Mode</string>
+    <string name="galeria">Pick From Gallery</string>
+    <string name="camara">Get Image From Camera</string>
     <string name="action_settings">Settings</string>
-    <string name="modo_descripcion">Request image description</string>
+    <string name="modo_descripcion">Request Image Description</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Titles -->
