@@ -1,10 +1,27 @@
 <resources>
     <string name="app_name">What\'s There</string>
-    <string name="title_activity_image">Imagen</string>
-    <string name="modo_imagen">Imagen</string>
-    <string name="modo_video">Vídeo</string>
-    <string name="modo_descripcion">Descripción</string>
-    <string name="galeria">Seleccionar desde galería</string>
-    <string name="camara">Obtener desde cámara</string>
-    <string name="action_settings">Ajustes</string>
+    <string name="title_activity_image">Image</string>
+    <string name="modo_imagen">Image mode</string>
+    <string name="modo_video">Video mode</string>
+    <string name="galeria">Pick from gallery</string>
+    <string name="camara">Get image from camera</string>
+    <string name="action_settings">Settings</string>
+    <string name="modo_descripcion">Request image description</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="theme_header">Colour Theme</string>
+    <!--<string name="sync_header">Sync</string>-->
+
+    <!-- Messages Preferences -->
+    <string name="theme_title">Colour theme</string>
+    <!--<string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>-->
+
+    <!-- Sync Preferences -->
+  <!--  <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>-->
 </resources>

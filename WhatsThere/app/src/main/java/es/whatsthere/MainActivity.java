@@ -1,10 +1,13 @@
 package es.whatsthere;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,9 +19,21 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     TextToSpeech tts;
+    private int SETTINGS_ACTION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String userTheme = preferences.getString("theme", "light");
+
+        if(userTheme.equals("light")){
+            setTheme(R.style.AppTheme_Light);
+        }else if (userTheme.equals("dark")){
+            setTheme((R.style.AppTheme_Dark));
+        }else{
+            setTheme(R.style.AppTheme_Light);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -41,6 +56,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+//    @Override
+//    protected void onResume(){
+//        recreate();
+//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        String userTheme = preferences.getString("theme", "light");
+//
+//        if(userTheme.equals("light")){
+//            setTheme(R.style.AppTheme_Light);
+//        }else if (userTheme.equals("dark")){
+//            setTheme((R.style.AppTheme_Dark));
+//        }else{
+//            setTheme(R.style.AppTheme_Light);
+//        }
+//
+//        super.onResume();
+//        setContentView(R.layout.activity_main);
+//    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -57,7 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -92,4 +126,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tts.shutdown();
+    }
 }
