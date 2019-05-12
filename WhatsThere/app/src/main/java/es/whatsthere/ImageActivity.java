@@ -1,14 +1,15 @@
 package es.whatsthere;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
-import androidx.annotation.NonNull;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -41,10 +42,12 @@ import retrofit2.Response;
 public class ImageActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int GET_PICTURE_CAMERA = 100;
+    private static final int GET_PICTURE_GALLERY = 101;
     Bitmap myBitmap;
-    private APIService mAPIService;
-    ProgressDialog pDialog;
+    //ProgressDialog pDialog;
     TextToSpeech tts;
+    private APIService mAPIService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +62,10 @@ public class ImageActivity extends AppCompatActivity {
 
         mAPIService = APIUtils.getAPIService();
 
-        tts=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status == TextToSpeech.SUCCESS){
+                if (status == TextToSpeech.SUCCESS) {
                     tts.setLanguage(new Locale("en", "GB"));
                 }
             }
@@ -74,7 +77,7 @@ public class ImageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if(myBitmap != null){
+                if (myBitmap != null) {
                     MultipartBody.Part profilePic = null;
                     File file = CreateFileFromBitmap(myBitmap);
 
@@ -86,7 +89,7 @@ public class ImageActivity extends AppCompatActivity {
                     sendPost(profilePic);
                     Log.d(TAG, "Enviando imagen");
                     //ConvertTextToSpeech("Picture description requested.");
-                }else{
+                } else {
                     ConvertTextToSpeech("There is no picture selected.");
                 }
             }
@@ -97,9 +100,9 @@ public class ImageActivity extends AppCompatActivity {
         mAPIService.uploadData(imagePart).enqueue(new Callback<MessageResponse>() {
             @Override
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
-                Log.e(TAG,String.valueOf(response.code()));
-                if(response.isSuccessful()) {
-                    Log.d(TAG,"Response successful!");
+                Log.e(TAG, String.valueOf(response.code()));
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Response successful!");
                     Log.d(TAG, "post submitted to API." + response.body().toString());
 
                     Gson gson = new Gson();
@@ -109,35 +112,34 @@ public class ImageActivity extends AppCompatActivity {
 
                     ConvertTextToSpeech("The picture contains " + stringBuilder.toString());
 
-                }
-                else{
-                    String text = "Error: " + response.code() +  " \nImage sending error";
+                } else {
+                    String text = "Error: " + response.code() + " \nImage sending error";
                     ConvertTextToSpeech(text);
-                    Toast toast = Toast.makeText(ImageActivity.this, text,Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(ImageActivity.this, text, Toast.LENGTH_LONG);
                     toast.show();
                 }
             }
 
             @Override
             public void onFailure(Call<MessageResponse> call, Throwable t) {
-                Toast toast = Toast.makeText(ImageActivity.this, "Unable to send image " + t.getCause(),Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(ImageActivity.this, "Unable to send image " + t.getCause(), Toast.LENGTH_LONG);
                 toast.show();
                 Log.e(TAG, t.getMessage().toLowerCase());
-                Log.e(TAG,call.request().body().toString());
-                Log.e(TAG,call.request().url().toString());
+                Log.e(TAG, call.request().body().toString());
+                Log.e(TAG, call.request().url().toString());
             }
         });
     }
 
-    public StringBuilder parseResponse(String response){
-        Log.d(TAG, "Texto: " + response+"\n\n\n\n");
+    public StringBuilder parseResponse(String response) {
+        Log.d(TAG, "Texto: " + response + "\n\n\n\n");
         StringBuilder texto = new StringBuilder();
         try {
             JSONObject json = new JSONObject(response);
             JSONArray jsonArray = json.getJSONArray("result");
             HashMap<String, Integer> data = new HashMap<>();
 
-            if(jsonArray.length()> 0){
+            if (jsonArray.length() > 0) {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonData = jsonArray.getJSONObject(i);
                     if (jsonData.getInt("p") >= 10) {
@@ -150,29 +152,28 @@ public class ImageActivity extends AppCompatActivity {
                     }
                 }
 
-                for(String objeto : data.keySet()){
+                for (String objeto : data.keySet()) {
                     texto.append(data.get(objeto) + " " + objeto + ".\n");
                 }
-            }else{
+            } else {
                 texto.append("The system could not recognize any object in this picture.");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return texto;
     }
 
     private void ConvertTextToSpeech(CharSequence text) {
-        if(text==null||"".equals(text))
-        {
+        if (text == null || "".equals(text)) {
             text = "Content not available";
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-        }else
+        } else
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
 
-    public File CreateFileFromBitmap(Bitmap bitmap){
+    public File CreateFileFromBitmap(Bitmap bitmap) {
         //create a file to write bitmap data
         File f = new File(this.getCacheDir(), "childimage");
         try {
@@ -213,22 +214,50 @@ public class ImageActivity extends AppCompatActivity {
         ConvertTextToSpeech("Activated camera.");
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, 100);
+        startActivityForResult(intent, GET_PICTURE_CAMERA);
+    }
+
+    public void pickFromGallery(View view) {
+        ConvertTextToSpeech("Picking image from gallery.");
+
+        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, GET_PICTURE_GALLERY);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100) {
 
-            if (resultCode == RESULT_OK) {
+        switch (requestCode) {
+            case GET_PICTURE_CAMERA:
+                if (resultCode == RESULT_OK) {
 
-                myBitmap = data.getExtras().getParcelable("data");
-                ImageView image = findViewById(R.id.userProfileImage);
-                image.setImageBitmap(myBitmap);
+                    myBitmap = data.getExtras().getParcelable("data");
+                    ImageView image = findViewById(R.id.userProfileImage);
+                    image.setImageBitmap(myBitmap);
 
-                ConvertTextToSpeech("Picture taken successfully.");
-            }
+                    ConvertTextToSpeech("Picture taken successfully.");
+                }
+
+                break;
+            case GET_PICTURE_GALLERY:
+                if (resultCode == RESULT_OK) {
+
+                    Uri selectedImage = data.getData();
+                    try {
+                        myBitmap =  MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    ImageView image = findViewById(R.id.userProfileImage);
+                    image.setImageBitmap(myBitmap);
+
+                    ConvertTextToSpeech("Picture selected successfully.");
+                }
+                break;
+            default:
+                break;
         }
     }
 
