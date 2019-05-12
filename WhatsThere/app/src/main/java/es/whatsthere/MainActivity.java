@@ -93,4 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tts.shutdown();
+    }
 }
