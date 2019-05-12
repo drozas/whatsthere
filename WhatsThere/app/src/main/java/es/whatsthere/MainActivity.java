@@ -19,7 +19,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     TextToSpeech tts;
-    private int SETTINGS_ACTION = 1;
+   // private int SETTINGS_ACTION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.videoButton:
-                ConvertTextToSpeech("Video mode selected.");
+                ConvertTextToSpeech("Video mode not available.");
                 /* Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);

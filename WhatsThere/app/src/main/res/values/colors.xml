@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="blue">#1a237e</color>
+    <color name="blue">#1A237E</color>
     <color name="navyblue">#000051</color>
-    <color name="hotpink">#e91e63</color>
+    <color name="darkred">#A01616</color>
     <color name="black">#000000</color>
-    <color name="white">#ffffff</color>
+    <color name="white">#FFFFFF</color>
+    <color name="yellow">#FFE600</color>
 </resources>

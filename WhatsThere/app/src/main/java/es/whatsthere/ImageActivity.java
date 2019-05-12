@@ -1,6 +1,8 @@
 package es.whatsthere;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,6 +11,8 @@ import android.speech.tts.TextToSpeech;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.util.Log;
 import android.view.View;
@@ -44,6 +48,7 @@ public class ImageActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int GET_PICTURE_CAMERA = 100;
     private static final int GET_PICTURE_GALLERY = 101;
+    private static final int REQUEST_CAMERA_PERMISSION = 102;
     Bitmap myBitmap;
     //ProgressDialog pDialog;
     TextToSpeech tts;
@@ -88,7 +93,7 @@ public class ImageActivity extends AppCompatActivity {
 
                     sendPost(profilePic);
                     Log.d(TAG, "Enviando imagen");
-                    //ConvertTextToSpeech("Picture description requested.");
+                    ConvertTextToSpeech("Picture description requested.");
                 } else {
                     ConvertTextToSpeech("There is no picture selected.");
                 }
@@ -211,10 +216,18 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     public void takeUserImage(View view) {
-        ConvertTextToSpeech("Activated camera.");
 
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, GET_PICTURE_CAMERA);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            ConvertTextToSpeech("Activated camera.");
+
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent, GET_PICTURE_CAMERA);
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    REQUEST_CAMERA_PERMISSION);
+        }
     }
 
     public void pickFromGallery(View view) {
@@ -246,7 +259,7 @@ public class ImageActivity extends AppCompatActivity {
 
                     Uri selectedImage = data.getData();
                     try {
-                        myBitmap =  MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                        myBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -258,6 +271,21 @@ public class ImageActivity extends AppCompatActivity {
                 break;
             default:
                 break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CAMERA_PERMISSION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                } else {
+                    ConvertTextToSpeech("Camera permission has not been granted. This functionality will not be available.");
+                }
+                return;
+            }
         }
     }
 
